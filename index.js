@@ -80,7 +80,6 @@ co(function* () {
             console.log("App running on port", server.address().port);
         }
         else {
-
             app.launchUpdateSchedule();
             app.launchTransactionUpdateSchedule();
             console.log("DONE. Update Task Processes  running as a child.");
@@ -1798,7 +1797,33 @@ let app = {
             response.write('{"status": 200, "mode": "' + data.mode + '", "message": "Broadcast PUSH Notification sent to ' + app.isPlural(broadcastCounter, "user") + '"}');
             return response.end();
         }
+        else if (path === "/query/custom") {
+            if (user.level < 5) {
+                response.write('{"status": 403, "message": "Access denied. Only Access Manager can do that."}');
+                return response.end();
+            }
+            else if (!data.query ) {
+                response.write('{"status": 422, "message": "Please provide a valid query to analyze."}');
+                return response.end();
+            }
 
+            let sql= data.query;
+            let result;
+            if(data.params){
+                let params= data.params.split(',');
+                if(params.length >0){
+                  result=  yield db.query(sql, params);
+                }
+            }
+            else {
+               result= yield db.query(sql);
+               if (result.rows){
+                   result= result.rows;
+               }
+            }
+            response.write(JSON.stringify({status: 200, result: result}));
+            return response.end();
+        }
         else if (path === "/analytics/summary") {
             if (user.level < 5) {
                 response.write('{"status": 403, "message": "Access denied. Only Access Manager can send PUSH Notifications."}');
