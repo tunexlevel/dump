@@ -1,10 +1,13 @@
 ---Grouping for the sbu---
-select sbu, count(terminal_id) as tid_count, count(merchant_id) as mid_count
-from region
-group by sbu, terminal_id, merchhant_id
+select sbu, count(sbu) as sbu_count
+from merchants
+group by sbu
 
 ---Grouping for the region---
-select region_name, count(terminal_id) as tid_count, count(merchant_id) as mid_count
+select region_name, count(region_name)
 from region
 where sbu = $1
-group by region_name, terminal_id, merchhant_id
+group by region_name
+
+--Grouping of Merchant by SBU----
+
