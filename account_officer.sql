@@ -1,3 +1,21 @@
+INSERT INTO public.terminal_cost_config
+(id, code, "name", average_cost, corporate_adjustment, updated, total_cost)
+VALUES(1, 'CL', 'Customer Location', 0.00, 0.00, '2018-01-23 16:37:59.403', 0);
+INSERT INTO public.terminal_cost_config
+(id, code, "name", average_cost, corporate_adjustment, updated, total_cost)
+VALUES(2, 'RO', 'Regular Offsite', 0.00, 0.00, '2018-01-23 16:38:19.828', 0);
+INSERT INTO public.terminal_cost_config
+(id, code, "name", average_cost, corporate_adjustment, updated, total_cost)
+VALUES(3, 'IL', 'In Lobby', 0.00, 0.00, '2018-01-23 16:38:44.738', 0);
+INSERT INTO public.terminal_cost_config
+(id, code, "name", average_cost, corporate_adjustment, updated, total_cost)
+VALUES(4, 'BR', 'Branch', 0.00, 0.00, '2018-01-23 16:39:13.595', 0);
+INSERT INTO public.terminal_cost_config
+(id, code, "name", average_cost, corporate_adjustment, updated, total_cost)
+VALUES(5, 'SA', 'Strategic Atm', 0.00, 0.00, '2018-01-23 16:39:33.402', 0);
+
+=====================================
+
 CREATE TABLE public.account_officer (
 	account_officer_name varchar(150) NULL,
 	terminal_id varchar(150) NULL,
