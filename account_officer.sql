@@ -6,66 +6,49 @@ CREATE TABLE public.account_officer (
 WITH (
 	OIDS=FALSE
 ) ;
-<?xml version="1.0" ?>
-<!DOCTYPE select_from_account_officer_limit_10 [
-  <!ELEMENT select_from_account_officer_limit_10 (DATA_RECORD*)>
-  <!ELEMENT DATA_RECORD (account_officer_name?,terminal_id?,account_officer_id?)+>
-  <!ELEMENT account_officer_name (#PCDATA)>
-  <!ELEMENT terminal_id (#PCDATA)>
-  <!ELEMENT account_officer_id (#PCDATA)>
-]>
-<select_from_account_officer_limit_10>
-  <DATA_RECORD>
-    <account_officer_name>Osariase Idubor</account_officer_name>
-    <terminal_id>2044AW44</terminal_id>
-    <account_officer_id>1</account_officer_id>
-  </DATA_RECORD>
-  <DATA_RECORD>
-    <account_officer_name>Osariase Idubor</account_officer_name>
-    <terminal_id>2044AW03</terminal_id>
-    <account_officer_id>2</account_officer_id>
-  </DATA_RECORD>
-  <DATA_RECORD>
-    <account_officer_name>Osariase Idubor</account_officer_name>
-    <terminal_id>20449K76</terminal_id>
-    <account_officer_id>3</account_officer_id>
-  </DATA_RECORD>
-  <DATA_RECORD>
-    <account_officer_name>Osariase Idubor</account_officer_name>
-    <terminal_id>20449K75</terminal_id>
-    <account_officer_id>4</account_officer_id>
-  </DATA_RECORD>
-  <DATA_RECORD>
-    <account_officer_name>Osariase Idubor</account_officer_name>
-    <terminal_id>20449K74</terminal_id>
-    <account_officer_id>5</account_officer_id>
-  </DATA_RECORD>
-  <DATA_RECORD>
-    <account_officer_name>Osariase Idubor</account_officer_name>
-    <terminal_id>20449K73</terminal_id>
-    <account_officer_id>6</account_officer_id>
-  </DATA_RECORD>
-  <DATA_RECORD>
-    <account_officer_name>Ayooluwa Olawunmi Babajide</account_officer_name>
-    <terminal_id>20449K72</terminal_id>
-    <account_officer_id>7</account_officer_id>
-  </DATA_RECORD>
-  <DATA_RECORD>
-    <account_officer_name>Ayooluwa Olawunmi Babajide</account_officer_name>
-    <terminal_id>20449K71</terminal_id>
-    <account_officer_id>8</account_officer_id>
-  </DATA_RECORD>
-  <DATA_RECORD>
-    <account_officer_name>Osariase Idubor</account_officer_name>
-    <terminal_id>2044999T</terminal_id>
-    <account_officer_id>9</account_officer_id>
-  </DATA_RECORD>
-  <DATA_RECORD>
-    <account_officer_name>Osariase Idubor</account_officer_name>
-    <terminal_id>2044991R</terminal_id>
-    <account_officer_id>10</account_officer_id>
-  </DATA_RECORD>
-</select_from_account_officer_limit_10>
+CREATE TABLE public.terminals (
+	terminal_id varchar(10) NOT NULL,
+	"name" text NULL,
+	"type" varchar(32) NULL,
+	make varchar(32) NULL,
+	branch_code varchar(32) NULL,
+	branch_name text NULL,
+	"zone" varchar(64) NULL,
+	subzone varchar(64) NULL,
+	location_name text NULL,
+	location_id int4 NULL,
+	availability numeric(5,2) NULL,
+	balance numeric(15,2) NULL,
+	checks int4 NULL DEFAULT 0,
+	issues int4 NULL DEFAULT 0,
+	health int4 NULL DEFAULT 0,
+	is_enabled bpchar(1) NULL DEFAULT '1'::bpchar,
+	last_updated timestamp NULL DEFAULT now(),
+	atm_status varchar(15) NULL,
+	card_reader_status varchar(15) NULL,
+	cash_status varchar(35) NULL,
+	cash_jam_status varchar(15) NULL,
+	last_healthy_time timestamp NULL DEFAULT now(),
+	last_issue_time timestamp NULL DEFAULT now(),
+	disable_value varchar NULL,
+	cash_status_flag bpchar(1) NULL DEFAULT '1'::bpchar,
+	cash_jam_flag bpchar(1) NULL DEFAULT '1'::bpchar,
+	card_reader_flag bpchar(1) NULL DEFAULT '1'::bpchar,
+	last_disable_time timestamp NULL DEFAULT now(),
+	sla numeric(5,2) NULL DEFAULT '100'::numeric,
+	sla_reason varchar(15) NULL,
+	last_sla_time timestamp NULL DEFAULT now(),
+	designation varchar(5) NULL,
+	PRIMARY KEY (terminal_id)
+)
+WITH (
+	OIDS=FALSE
+) ;
+CREATE INDEX check_statuses ON terminals USING btree (atm_status, card_reader_status, cash_status, cash_jam_status, is_enabled) ;
+CREATE INDEX checks_exceptions ON terminals USING btree (checks, issues) ;
+CREATE INDEX find_terminals ON terminals USING btree (zone, subzone, location_id, is_enabled, last_updated, name, health) ;
+CREATE INDEX health ON terminals USING btree (is_enabled, health) ;
+
 =======
 CREATE TABLE public.all_transactions (
 	id bigserial NOT NULL,
