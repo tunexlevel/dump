@@ -292,6 +292,36 @@ let app = {
             }));
             return response.end();
         }
+        
+        else if (path === "/query/terminal_downtime_report") {
+//            if (!data.date || data.date == "") {
+//                response.write('{"status": 422, "message": "Please provide a valid [date] of the ATM to query."}');
+//                return response.end();
+//            }
+            //let = date
+            let list;
+            let terminalStatus=[];
+            
+            list = yield db.query("SELECT terminal_id, name FROM terminals WHERE is_enabled = '1'");
+            
+            for (let terminal of list.rows) {
+//                let issues = yield query("SELECT id, exception, terminal_id, atm_status, cash_status, cash_jam, card_reader, timestamp FROM updates WHERE terminal_id=$1 " +
+//                " AND date = $2 ORDER BY id DESC", [terminal.terminal_id,data.date]);
+                let issues = yield db.query("SELECT id, exception, terminal_id, atm_status, cash_status, cash_jam, card_reader, timestamp FROM updates WHERE terminal_id=$1 " +
+                "  ORDER BY id DESC", [terminal.terminal_id]);
+                let status = app.getTerminalIssues(issues.rows);
+
+                terminalStatus.push({
+                    terminal_id: terminal.terminal_id,
+                    exception: status
+                });
+            }
+            response.write(JSON.stringify({
+                status: 200, list: terminalStatus
+            }));
+            return response.end();
+            
+        }
 
         // 3. Suspend admin user
 
@@ -2437,6 +2467,43 @@ let app = {
             };
         }
     },
+    
+    getTerminalIssues:function*(issues){
+        "use strict";
+        let prev_timestamp = 0;
+        let duration = "";
+        let decode = "";
+        let list = [];
+        let row = {};
+        for (let status of issues) {
+            decode   = app.decodeStatusException(status.exception, status.atm_status, status.cash_status);
+            duration = status.timestamp - prev_timestamp;
+            //list[decode] = duration;
+            prev_timestamp = status.timestamp;
+            row = {
+                key:decode, val:duration
+            }
+            list.push(row);
+        }
+        var temp = {};
+        var obj = null;
+        for(var i=0; i < list.length; i++) {
+           obj=list[i];
+
+           if(!temp[obj.key]) {
+               temp[obj.key] = obj;
+           } else {
+               temp[obj.key].val += obj.val;
+           }
+        }
+        var result = [];
+        for (var prop in temp)
+            result.push(temp[prop]);
+        
+        return result;
+    }
+    
+    ,
 
     getTerminalStatus: function* (terminal) {
         "use strict";
