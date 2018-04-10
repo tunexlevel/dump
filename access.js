@@ -483,6 +483,7 @@ let app = {
                 });
             });
         }
+        
 
         // 4. Change User Access password
 
@@ -616,6 +617,43 @@ let app = {
                 skipped: total - added - updated
             }));
             return response.end();
+        }
+        
+        //downtime issues
+        else if (path === "/query/terminal_downtime_report") {
+//            if (!data.date || data.date == "") {
+//                response.write('{"status": 422, "message": "Please provide a valid [date] of the ATM to query."}');
+//                return response.end();
+//            }
+            //let = date
+            let list;
+            let terminalStatus=[];
+            
+            list = yield db.query("SELECT terminal_id, name FROM terminals WHERE is_enabled = '1' LIMIT 500");
+            
+            //console.log(list.rows);
+            for (let terminal of list.rows) {
+                let issues = yield db.query("SELECT id, exception, terminal_id, atm_status, cash_status, cash_jam, card_reader, timestamp FROM updates WHERE terminal_id=$1 " +
+               " AND timestamp BETWEEN $2 AND $3 ORDER BY timestamp DESC", [terminal.terminal_id,'2018-02-20 00:00:00', '2018-02-20 23:59:59']);
+                //let issues = yield db.query("SELECT id, exception, terminal_id, atm_status, cash_status, cash_jam, card_reader, timestamp FROM updates WHERE terminal_id=$1 " +
+                //"  ORDER BY timestamp DESC", [terminal.terminal_id]);
+                
+              //  console.log(issues.rows);
+
+              //  let status = yield app.getTerminalIssues(issues.rows);
+//console.log(status);
+				  
+                //terminalStatus.push({
+               //     terminal_id: terminal.terminal_id,
+               //     exception: ""
+              //  });
+
+            }
+            response.write(JSON.stringify({
+                status: 200, list: {}
+            }));
+            return response.end();
+            
         }
 
         // 7. Remove ATM terminal
@@ -1985,6 +2023,66 @@ let app = {
             }
             return {transaction_count: total_count, transaction_value: total_value}
         }
+    },
+    getTerminalIssues: function *(issues){
+        "use strict";
+        let prev_timestamp = 0;
+        if(issues[0]){
+        	prev_timestamp = new moment(issues[0].timestamp).unix();
+        }
+
+        
+        let duration = "";
+        let decode = "";
+        let list = [];
+        let row = {};
+        for (let status of issues) {
+            decode       = app.decodeStatusException(status.exception, status.atm_status, status.cash_status);
+            var cur_time = new moment(status.timestamp).unix();
+            duration     = prev_timestamp - cur_time;
+            //list[decode] = duration;
+            let statuses = decode.split(",");
+            prev_timestamp = cur_time;
+            row = {
+                key:statuses[0], val:duration
+            }
+            list.push(row);
+        }
+        var temp = {};
+        var obj = null;
+        for(var i=0; i < list.length; i++) {
+           obj=list[i];
+
+           if(!temp[obj.key]) {
+               temp[obj.key] = obj;
+           } else {
+               temp[obj.key].val += obj.val;
+           }
+        }
+        var result = [];
+        for (var prop in temp){
+        	var x = temp[prop].val; 
+        	var tempTime = moment.duration(x);
+        	var hr = ''; var min = ''; var sec='';
+        	if(tempTime.hours()!=0){
+				hr = tempTime.hours()+'h ';
+        	}
+        	if(tempTime.minutes()!=0){
+        		min = tempTime.minutes()+'m '
+        	}
+        	if(tempTime.seconds()!=0){
+        		sec = tempTime.seconds()+'s '
+        	}
+			var y = hr+min+sec;
+			if(y == ''){
+				y = x;
+			}
+        	temp[prop].val = y;
+            result.push(temp[prop]);
+        }
+        	
+        
+        return result;
     },
     getBranchTransactions: function* (branch, tag) {
 
